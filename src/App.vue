@@ -15,13 +15,14 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { JsonForms, JsonFormsChangeEvent } from "@jsonforms/vue";
+// Estilos e renderizadores padrão para elementos de formulário:
 import {
   defaultStyles,
   mergeStyles,
   vanillaRenderers,
 } from "@jsonforms/vue-vanilla";
 
-// mergeStyles combines all classes from both styles definitions into one
+// mergeStyles é usado para combinar estilos padrão com estilos personalizados (myStyles), neste caso, ajustando a cor do rótulo.
 const myStyles = mergeStyles(defaultStyles, { control: { label: "mylabel" } });
 
 const renderers = [
@@ -29,6 +30,9 @@ const renderers = [
   // here you can add custom renderers
 ];
 
+// Define a estrutura de dados que o formulário irá manipular 
+//    Tipos de dados
+//    Regras para validação (como minLength para strings)).
 const schema = {
   properties: {
     name: {
@@ -63,6 +67,9 @@ const schema = {
   },
 };
 
+// Define a estrutura de layout do formulário, 
+//    Organiza os campos em layouts verticais e horizontais.
+//    Cada 'Control' corresponde a um campo do 'schema', identificado por 'scope' que aponta para a propriedade correspondente no 'schema'.  
 const uischema = {
   type: "HorizontalLayout",
   elements: [
