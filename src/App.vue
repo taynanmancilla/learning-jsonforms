@@ -1,153 +1,100 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <h1>JSON Forms Vue 3</h1>
-  <div class="myform">
-    <json-forms
-      :data="data"
-      :renderers="renderers"
-      :schema="schema"
-      :uischema="uischema"
-      @change="onChange"
-    />
+  <div>
+    <h1>Dados do Usuário</h1>
+    <!-- Botão q abre o Modal de criação de usuário -->
+    <button @click="showModal = true">Create</button>
+    <!-- Tabela -->
+    <custom-table :schema="userSchema" :data="userData" />
+    <!-- Modal de criação de usuário: -->
+    <div v-if="showModal" class="modal">
+      <div class="modal-content">
+        <span class="close" @click="showModal = false">&times;</span>
+        <h1>Novo Usuario</h1>
+        <json-forms
+          :data="newUserData"
+          :renderers="renderers"
+          :schema="userSchema"
+          :uischema="uiSchema"
+          @change="onNewUserChange"
+        />
+        <button class="myButton" @click="addNewUser">Submit</button>
+      </div>
+    </div>
+
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-import { JsonForms, JsonFormsChangeEvent } from "@jsonforms/vue";
-// Estilos e renderizadores padrão para elementos de formulário:
+<script setup lang="ts">
+import { ref, provide } from 'vue';
+import CustomTable from './components/CustomTable.vue';  // Importe o componente da tabela
+import { JsonForms, JsonFormsChangeEvent } from "@jsonforms/vue"; // Certifique-se de ter importado o JSON Forms
 import {
   defaultStyles,
   mergeStyles,
   vanillaRenderers,
 } from "@jsonforms/vue-vanilla";
 
-// mergeStyles é usado para combinar estilos padrão com estilos personalizados (myStyles), neste caso, ajustando a cor do rótulo.
-const myStyles = mergeStyles(defaultStyles, { control: { label: "mylabel" } });
+const myStyles = mergeStyles(defaultStyles, { 
+  control: {
+    label: "mylabel",
+    input: 'myInput'
+   } 
+});
 
 const renderers = [
   ...vanillaRenderers,
-  // here you can add custom renderers
 ];
 
-// Define a estrutura de dados que o formulário irá manipular 
-//    Tipos de dados
-//    Regras para validação (como minLength para strings)).
-const schema = {
+const userSchema = ref({
+  type: "object",
   properties: {
-    name: {
-      type: "string",
-      minLength: 1,
-      description: "The task's name"
-    },
-    description: {
-      title: "Long Description",
-      type: "string",
-    },
-    done: {
-      type: "boolean",
-    },
-    dueDate: {
-      type: "string",
-      format: "date",
-      description: "The task's due date"
-    },
-    rating: {
-      type: "integer",
-      maximum: 5,
-    },
-    recurrence: {
-      type: "string",
-      enum: ["Never", "Daily", "Weekly", "Monthly"]
-    },
-    recurrenceInterval: {
-      type: "integer",
-      description: "Days until recurrence"
-    },
-  },
-};
+    name: { type: "string", title: "Nome" },
+    age: { type: "integer", title: "Idade" },
+    email: { type: "string", format: "email", title: "Email" },
+    phone: { type: "string", minLength: 10, title: "Telefone" }
+  }
+});
 
-// Define a estrutura de layout do formulário, 
-//    Organiza os campos em layouts verticais e horizontais.
-//    Cada 'Control' corresponde a um campo do 'schema', identificado por 'scope' que aponta para a propriedade correspondente no 'schema'.  
-const uischema = {
+const uiSchema = ref({
   type: "HorizontalLayout",
   elements: [
     {
       type: "VerticalLayout",
       elements: [
-        {
-          type: "Control",
-          scope: "#/properties/name",
-        },
-        {
-          type: "Control",
-          scope: "#/properties/description",
-          options: {
-            multi: true,
-          }
-        },
-        {
-          type: "Control",
-          scope: "#/properties/done",
-        },
-      ],
+        { type: "Control", scope: "#/properties/name" },
+        { type: "Control", scope: "#/properties/age" },
+      ]
     },
     {
       type: "VerticalLayout",
       elements: [
-        {
-          type: "Control",
-          scope: "#/properties/dueDate",
-        },
-        {
-          type: "Control",
-          scope: "#/properties/rating",
-        },
-        {
-          type: "Control",
-          scope: "#/properties/recurrence",
-        },
-        {
-          type: "Control",
-          scope: "#/properties/recurrenceInterval",
-        },
-      ],
+        { type: "Control", scope: "#/properties/email" },
+        { type: "Control", scope: "#/properties/phone" }
+      ]
     },
-  ],
+  ]
+});
+
+const userData = ref([
+  { name: "Alice", age: 25, email: "alice@example.com", phone: "1234567890" },
+  { name: "Bob", age: 30, email: "bob@example.com", phone: "1234567890" }
+]);
+
+const showModal = ref(false);
+const newUserData = ref({});
+
+const onNewUserChange = (event: JsonFormsChangeEvent) => {
+  newUserData.value = event.data;
 };
 
-export default defineComponent({
-  name: "App",
-  components: {
-    JsonForms,
-  },
-  data() {
-    return {
-      // freeze renderers for performance gains
-      renderers: Object.freeze(renderers),
-      data: {
-        name: "Send email to Adrian",
-        description: "Confirm if you have passed the subject\nHereby ...",
-        done: true,
-        recurrence: "Daily",
-        rating: 3,
-      },
-      schema,
-      uischema,
-    };
-  },
-  methods: {
-    onChange(event: JsonFormsChangeEvent) {
-      this.data = event.data;
-    },
-  },
-  provide() {
-    return {
-      styles: myStyles,
-    };
-  },
-});
+const addNewUser = () => {
+  userData.value.push({ ...newUserData.value });
+  newUserData.value = {};
+  showModal.value = false;
+};
+
+// Provide de estilos do componentes do JSONForms
+provide('styles', myStyles);
 </script>
 
 <style>
@@ -178,5 +125,58 @@ export default defineComponent({
 
 .text-area {
   min-height: 80px;
+}
+
+.modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.myInput {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.myButton {
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
 }
 </style>
