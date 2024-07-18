@@ -26,13 +26,9 @@
 
 <script setup lang="ts">
 import { ref, provide } from 'vue';
-import CustomTable from './components/CustomTable.vue';  // Importe o componente da tabela
-import { JsonForms, JsonFormsChangeEvent } from "@jsonforms/vue"; // Certifique-se de ter importado o JSON Forms
-import {
-  defaultStyles,
-  mergeStyles,
-  vanillaRenderers,
-} from "@jsonforms/vue-vanilla";
+import CustomTable from './components/CustomTable.vue';
+import { JsonForms, JsonFormsChangeEvent } from "@jsonforms/vue";
+import { defaultStyles, mergeStyles, vanillaRenderers } from "@jsonforms/vue-vanilla";
 
 const myStyles = mergeStyles(defaultStyles, { 
   control: {
@@ -52,7 +48,11 @@ const userSchema = ref({
     age: { type: "integer", title: "Idade" },
     email: { type: "string", format: "email", title: "Email" },
     phone: { type: "string", minLength: 10, title: "Telefone" }
-  }
+  },
+  required: [
+    "name",
+    "email"
+  ]
 });
 
 const uiSchema = ref({
@@ -61,7 +61,7 @@ const uiSchema = ref({
     {
       type: "VerticalLayout",
       elements: [
-        { type: "Control", scope: "#/properties/name" },
+        { type: "Control", label: "Nome", scope: "#/properties/name",  },
         { type: "Control", scope: "#/properties/age" },
       ]
     },
